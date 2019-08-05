@@ -4,7 +4,8 @@
   "description": "A web application written in Express and node that uses nedb to store information about walking tours and run them in the browser",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
