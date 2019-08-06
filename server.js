@@ -11,8 +11,9 @@ app.listen(port, () => {
 app.use(express.static('public'));
 app.use(express.json()) // for parsing application/json - need this to be able to parse the body of a json file from the request object
 
-const database = new Datastore('database.db');
-database.loadDatabase();
+// Security note: the database is saved to the file `datafile` on the local filesystem. It's deliberately placed in the `.data` directory
+// which doesn't get copied if someone remixes the project on Glitch, which is where this is being deployed...
+const database = new Datastore({ filename: '.data/database.db', autoload: true });
 
 app.post('/api', (request, response) => {
   let data = request.body;

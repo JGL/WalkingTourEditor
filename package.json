@@ -2,10 +2,10 @@
   "name": "walkingtour",
   "version": "1.0.0",
   "description": "A web application written in Express and node that uses nedb to store information about walking tours and run them in the browser",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "node server.js"
   },
   "repository": {
     "type": "git",
