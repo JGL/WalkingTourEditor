@@ -4,9 +4,9 @@ latitude = 0; //latitude is north/south amount
 longitude = 0; // longitude is east/west amount - prime meridian (0) is London, Longitude rewards - https://en.wikipedia.org/wiki/Longitude_rewards
 let firstTime = true; //boolean state for first time run, hacky
 
-function onMapClick(e) {
-	//alert("You clicked the map at " + e.latlng);
-	theMap.setLatLng(e.latlng);
+
+let onMapClick = e => { // https://stackoverflow.com/questions/27977525/how-do-i-write-a-named-arrow-function-in-es2015
+	e.target.flyTo(e.latlng);
 }
 
 function addMapWithTiles() {
@@ -39,13 +39,13 @@ function checkForGeolocation() {
 }
 
 async function geoLocate() {
-	console.log('Geolocating....');
+	// console.log('Geolocating....');
 	// Geolocates the user's browser
 	if (checkForGeolocation()) {
 		navigator.geolocation.getCurrentPosition(async position => {
 			try {
 				let informationTag = document.getElementById("geolocation");
-				informationTag.innerHTML = `Your location is: Latitude: <span id="latitude"></span>&deg;, Longitude:
+				informationTag.innerHTML = `New waypoint location is: Latitude: <span id="latitude"></span>&deg;, Longitude:
 		<span id="longitude"></span>&deg;.`;
 
 				latitude = position.coords.latitude;
@@ -61,7 +61,8 @@ async function geoLocate() {
 						fillOpacity: 0.5,
 						radius: 21
 					}).addTo(theMap);
-					theMap.setView([latitude, longitude], 17) //centre the view on the geolocation the first time we get a value
+					//theMap.setView([latitude, longitude], 17) //centre the view on the geolocation the first time we get a value
+					theMap.flyTo([latitude, longitude], 17) //centre the view on the geolocation the first time we get a value
 					firstTime = false;
 				} else {
 					liveLocationRedCircle.setLatLng([latitude, longitude]); //if it's already been created, then just update position and don't recentre the view...
@@ -73,19 +74,52 @@ async function geoLocate() {
 	}
 }
 
-function addSaveButton() {
+function addSaveButtonAndWaypointDescription() {
 	//adds a button to the DOM, IFF geolocation is available
 	if (checkForGeolocation()) {
-		const root = document.createElement('p');
-		const button = document.createElement("button");
-		button.innerHTML = "Save current location to walking tour";
-		root.append(button);
+		const root = document.createElement("p");
 
-		const saveButtonDiv = document.getElementById("saveButton");
-		saveButtonDiv.append(root);
+		//make the form, way point description text field and label
+		const description = document.createElement("input");
+		description.type = "text";
+		description.id = "waypointDescription";
+		description.value = "type here first";
+		const descriptionLabel = document.createElement("label");
+		descriptionLabel.setAttribute("for", "waypointDescription");
+		descriptionLabel.innerHTML = "Waypoint label: ";
+
+		root.appendChild(descriptionLabel); // put it into the DOM
+		root.appendChild(description); // put it into the DOM
+
+		//make the button to add the description and location to the database
+		const button = document.createElement("button");
+		button.innerHTML = "Add waypoint";
+		button.id = "submitWaypointButton"
+		button.disabled = true;
+
+		root.appendChild(button);
+
+		//add the newly created root node to the document
+		const buttonAndDescriptionDiv = document.getElementById("addWaypoint");
+		buttonAndDescriptionDiv.appendChild(root);
+
+		// https://itnext.io/https-medium-com-joshstudley-form-field-validation-with-html-and-a-little-javascript-1bda6a4a4c8c
+		description.addEventListener('keyup', event => {
+
+			const isValidDescription = (event.srcElement.value.length > 0) && (event.srcElement.value != "type here first"); //only checking if any text is added at the moment
+
+			if (isValidDescription) {
+				button.disabled = false;
+			} else {
+				button.disabled = true;
+			}
+		});
 
 		button.addEventListener('click', async event => {
+			let waypointDescription = document.getElementById("waypointDescription").value;
+
 			const data = {
+				waypointDescription,
 				latitude,
 				longitude
 			};
@@ -99,12 +133,12 @@ function addSaveButton() {
 			const response = await fetch('/api', options);
 			const json = await response.json();
 			//console.log(`Response from server: ${json}`);
-			displayPreviousLocations(); //now we've added the new point, refresh the walking tour locations
+			displayWaypoints(); //now we've added the new waypoint, refresh all of them
 		});
 	}
 }
 
-async function displayPreviousLocations() {
+async function displayWaypoints() {
 	const response = await fetch('/api');
 	const data = await response.json();
 	let waypoints = document.getElementById("waypoints");
@@ -114,36 +148,56 @@ async function displayPreviousLocations() {
 	}
 
 	const descriptionElement = document.createElement('p');
-	descriptionElement.innerHTML = "Walking tour waypoints:";
+	descriptionElement.innerHTML = "Current waypoints: (drag to reorder, or drag away to delete)";
 	waypoints.append(descriptionElement);
 
 	if (!(data.length > 0)) {
-		descriptionElement.innerHTML = "No previously added waypoints! Please add some above.";
+		descriptionElement.innerHTML = "No waypoints! Please add some above.";
 		return;
 	}
 
 	const listOfPreviousLocations = document.createElement('ol');
 
+	let i = 1 //counter for waypoint order
+
 	for (item of data) {
 		const root = document.createElement('li');
+		const textDescription = document.createElement('div');
 		const geo = document.createElement('div');
 		const date = document.createElement('div');
 
+		textDescription.textContent = item.waypointDescription;
 		geo.textContent = `${item.latitude}°, ${item.longitude}°`;
 		const dateString = new Date(item.timestamp).toLocaleString();
 		date.textContent = dateString;
 
-		root.append(geo, date);
+		root.append(textDescription, geo, date);
 		listOfPreviousLocations.append(root);
 
 		const marker = L.marker([item.latitude, item.longitude]).addTo(theMap);
+		marker.bindPopup(`Waypoint ${i}:${item.waypointDescription}`);
+		i++;
 	}
 
 	waypoints.append(listOfPreviousLocations);
+
+	//now style and interaction it using SortableJS
+	//https://sortablejs.github.io/Sortable/
+	//var example1 = document.getElementById('example1');
+
+	// Example 1 - Simple list and https://github.com/SortableJS/Sortable/tree/master/plugins/OnSpill
+	new Sortable(listOfPreviousLocations, {
+		animation: 150,
+		removeOnSpill: true, // Enable plugin
+		//Called when item is spilled
+		onSpill: function(/**Event*/evt) {
+			evt.item // The spilled item
+		}
+	});
 }
 
 addMapWithTiles();
 geoLocate();
-displayPreviousLocations();
-addSaveButton();
-setInterval(geoLocate, 1000); //geolocate every 1000 milliseconds / second
+displayWaypoints();
+addSaveButtonAndWaypointDescription();
+setInterval(geoLocate, 1000); //geolocate every 1000 milliseconds / second, an async function, so other things can happen too...
