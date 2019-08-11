@@ -1,0 +1,34 @@
+{
+	"title": "Highams Park",
+	"waypoints": [{
+			"label": "First",
+			"latitude": 51.6061853,
+			"longitude": 0.0016033,
+			"timestamp": 1565106843993
+		},
+		{
+			"label": "Second",
+			"latitude": 51.6061598,
+			"longitude": 0.0016259,
+			"timestamp": 1565116464662
+		},
+		{
+			"label": "Yay",
+			"latitude": 51.6061817,
+			"longitude": 0.0016091,
+			"timestamp": 1565194119090
+		},
+		{
+			"label": "Yay2",
+			"latitude": 51.6061817,
+			"longitude": 0.0016091,
+			"timestamp": 1565194120728
+		},
+		{
+			"label": "Yay3",
+			"latitude": 51.6061817,
+			"longitude": 0.0016091,
+			"timestamp": 1565194122865
+		}
+	]
+}

@@ -1,8 +1,8 @@
-body {
-	padding: 20px;
-}
-
 #theMap {
 	width: 320px;
 	height: 240px;
+}
+
+.handle {
+	cursor: grab;
 }
