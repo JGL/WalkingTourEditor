@@ -1,6 +1,6 @@
 let latitude, longitude, theMap, liveLocationRedCircle;
 
-latitude = 0; //latitude is north/south amount
+latitude = 0; // latitude is north/south amount
 longitude = 0; // longitude is east/west amount - prime meridian (0) is London, Longitude rewards - https://en.wikipedia.org/wiki/Longitude_rewards
 let firstTime = true; //boolean state for first time run, hacky
 
@@ -40,7 +40,7 @@ function checkForGeolocation() {
 
 async function geoLocate() {
 	// console.log('Geolocating....');
-	// Geolocates the user's browser
+	// geolocates the user's browser
 	if (checkForGeolocation()) {
 		navigator.geolocation.getCurrentPosition(async position => {
 			try {
@@ -62,13 +62,13 @@ async function geoLocate() {
 						radius: 21
 					}).addTo(theMap);
 					//theMap.setView([latitude, longitude], 17) //centre the view on the geolocation the first time we get a value
-					theMap.flyTo([latitude, longitude], 17) //centre the view on the geolocation the first time we get a value
+					theMap.flyTo([latitude, longitude], 17) //fly to the geolocation the first time we get a value
 					firstTime = false;
 				} else {
 					liveLocationRedCircle.setLatLng([latitude, longitude]); //if it's already been created, then just update position and don't recentre the view...
 				}
 			} catch (error) {
-				console.error(error);;
+				console.error(error);
 			}
 		});
 	}
@@ -148,6 +148,8 @@ async function displayTour() {
 		waypoints.removeChild(waypoints.firstChild);
 	}
 
+	console.log(`Waypoints should be empty at this point.`);
+
 	const descriptionElement = document.createElement('p');
 	descriptionElement.innerHTML = `Current waypoints: (drag <i class="
 	fas fa-arrows-alt "></i> to reorder, click <i class="
@@ -162,26 +164,56 @@ async function displayTour() {
 	const divOfWaypoints = document.createElement('div');
 	divOfWaypoints.id = "waypointsList";
 	divOfWaypoints.classList.add("list-group"); // https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
-	divOfWaypoints.classList.add("col"); //Bootstrap CSS via https://getbootstrap.com/
+	divOfWaypoints.classList.add("col"); //bootstrap CSS via https://getbootstrap.com/
 
-	let i = 0; //counter for waypoint order
+	let currentWaypointIndex = 0; //counter for waypoint order
 
 	for (waypoint of tour.waypoints) {
 		const root = document.createElement('div');
-		root.classList.add("list-group-item"); //Bootstrap CSS via https://getbootstrap.com/
+		root.classList.add("list-group-item"); //bootstrap CSS via https://getbootstrap.com/
+
 		const handle = document.createElement('i');
 		handle.classList.add("fas", "fa-arrows-alt", "handle"); // adding Fontawesome icon: https://fontawesome.com/icons/arrows-alt?style=solid
-		const label = document.createElement('div');
-		const geo = document.createElement('div');
-		const date = document.createElement('div');
-		const rubbish = document.createElement('i');
-		rubbish.classList.add("fas", "fa-trash");
 
+		const label = document.createElement('div');
+		label.classList.add("waypoint-label");
+		const geo = document.createElement('div');
+		geo.classList.add("waypoint-geo");
+		const date = document.createElement('div');
+		date.classList.add("waypoint-date");
+		const rubbish = document.createElement('i');
+		const hiddenLatitude = document.createElement('div');
+		hiddenLatitude.classList.add("waypoint-latitude-hidden");
+		const hiddenLongitude = document.createElement('div');
+		hiddenLongitude.classList.add("waypoint-longitude-hidden");
+		const hiddenTimestamp = document.createElement('div');
+		hiddenTimestamp.classList.add("waypoint-timestamp-hidden");
+
+		//set the content of visible UI elements
+		label.textContent = waypoint.label;
+		geo.textContent = `${waypoint.latitude}°, ${waypoint.longitude}°`;
+		const dateString = new Date(waypoint.timestamp).toLocaleString();
+		date.textContent = dateString;
+		const marker = L.marker([waypoint.latitude, waypoint.longitude]).addTo(theMap);
+		marker.bindPopup(`Waypoint ${currentWaypointIndex + 1}:${waypoint.label}`);
+
+		//set the content of hidden UI elements, avoids horrible and insecure de-formating of strings from html
+		hiddenLatitude.textContent = waypoint.latitude;
+		hiddenLongitude.textContent = waypoint.longitude;
+		hiddenTimestamp.textContent = waypoint.timestamp;
+		//now make them hidden - https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/hidden
+		hiddenLatitude.hidden = true;
+		hiddenLongitude.hidden = true;
+		hiddenTimestamp.hidden = true;
+
+		//adding rubbish icon
+		rubbish.classList.add("fas", "fa-trash");
+		//set up the click event interaction for the rubbish icon
 		rubbish.addEventListener('click', async event => {
 			console.log(`Rubbish bin pressed!`);
 			root.remove(); //removing the clicked waypoint, by deleting it from the DOM
 
-			//console.log(divOfWaypoints); // this is the html div that we construct the edited tour from
+			console.log(divOfWaypoints.children); // this is the html div that we construct the edited tour from
 
 			let editedTour = {
 				"title": tour.title, //todo make the tour title editable, so this will likely be a conversion from the live dom to the json here
@@ -196,90 +228,49 @@ async function displayTour() {
 					"timestamp": -1
 				};
 
+				//currently the structure:
 				// < div class="list-group-item" >
-				// 	0th child element:<i class="fas fa-arrows-alt handle" aria - hidden = "true" > < /i>
-				// 	1st child element:<div>Second</div >
-				// 	2nd child element:<div> 51.6061598°, 0.0016259° < /div>
-				// 	3rd child element:<div>06/08 / 2019, 19: 34: 24 < /div>
-				//  4th child element:<i class="fas fa-trash" aria-hidden="true"></i >
+				// 	0th child element: < i class = \"fas fa-arrows-alt handle\" aria-hidden=\"true\"></i>
+				// 	1st child element: < div class = \"waypoint-label\">Second</div>
+				// 	2nd child element: < div class = \"waypoint-geo\">51.6061598°, 0.0016259°</div>
+				// 	3rd child element: < div class = \"waypoint-date\">8/6/2019, 7:34:24 PM</div>
+				// 	4th child element: < i class = \"fas fa-trash\" aria-hidden=\"true\"></i >
+				// 	5th child element: < div class = \"waypoint-latitude-hidden\" hidden=\"\">51.6061598</div>
+				// 	6th child element: < div class = \"waypoint-longitude-hidden\" hidden=\"\">0.0016259</div>
+				// 7th child element: < div class= \"waypoint-timestamp-hidden\" hidden=\"\">1565116464662</div>
 				// < /div>
 
-				// label is 1st child element
-				currentWaypoint.label = waypointDivision.children[1].innerHTML; // horrible and fragile!
+				//but lets at least try to select the relevant element, rather than doing direct array access a la:
+				//currentWaypoint.label = waypointDivision.children[1].innerHTML; // horrible and fragile! TODO: make this sensible
 
-				// location is 2nd child element
-				const tempLocationString = waypointDivision.children[2].innerHTML; // horrible and fragile!
-				const splitLocationArray = tempLocationString.split(",");
+				currentWaypoint.label = waypointDivision.querySelector('div.waypoint-label').innerHTML; //https://developer.mozilla.org/en-US/docs/Web/API/Element/querySelector / https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector
+				//important that these are numbers, not text
+				currentWaypoint.latitude = Number(waypointDivision.querySelector('div.waypoint-latitude-hidden').innerHTML);
+				currentWaypoint.longitude = Number(waypointDivision.querySelector('div.waypoint-longitude-hidden').innerHTML);
+				currentWaypoint.timestamp = Number(waypointDivision.querySelector('div.waypoint-timestamp-hidden').innerHTML);
 
-				let tempLatitude = splitLocationArray[0]; // horrible and fragile!
-				let tempLongitude = splitLocationArray[1]; // horrible and fragile!
-
-				//getting rid of degree symbols and the like
-				tempLatitude.trim();
-				tempLatitude = tempLatitude.replace('°', '');
-				tempLongitude.trim();
-				tempLongitude = tempLongitude.replace('°', '');
-
-				currentWaypoint.latitude = Number(tempLatitude);
-				currentWaypoint.longitude = Number(tempLongitude);
-
-				// timestamp is the 3rd child element
-				//https://stackoverflow.com/questions/40768606/i-have-a-utc-string-and-i-want-to-convert-it-to-utc-date-object-in-javascript/40768745#40768745
-				// problem is doing: Date(waypointDivision.children[3].innerHTML); messes up because it thinks it's a US date string, so the month and day are mixed up....
-				// The html timestamp is 07/08/2019, 17:08:39
-				// TODO fix this as I'm only remembering the seconds, the milliseconds aren't being displayed....
-				// TODO perhaps its better just to rember the timestamp and only display formatted html instead of converting it?
-				const tempDateTimeString = waypointDivision.children[3].innerHTML;
-
-				const splitDateTimeString = tempLocationString.split(",");
-
-				const tempDateString = splitDateTimeString[0];
-				const tempTimeString = splitDateTimeString[1];
-
-				const splitDateString = tempDateString.split("/");
-
-				const tempDay = Number(splitDateString[0]);
-				const tempMonth = Number(splitDateString[1]) - 1; //-1 as months are 0 addressed in Javascript
-				const tempYear = Number(splitDateString[2]);
-
-				const splitTimeString = tempTimeString.split(":");
-
-				const tempHour = Number(splitTimeString[0]);
-				const tempMinute = Number(splitTimeString[1]);
-				const tempSecond = Number(splitTimeString[2]);
-
-				const reconstructedTimetamp = new Date(tempYear, tempMonth, tempDay, tempHour, tempMinute, tempSecond);
-
-				console.log(`Time stamp is ${reconstructedTimetamp}`);
-
-				currentWaypoint.timestamp = reconstructedTimetamp;
 				editedTour.waypoints.push(currentWaypoint);
 			}
 
-			// const options = {
-			// 	method: 'POST',
-			// 	headers: {
-			// 		'Content-Type': 'application/json'
-			// 	},
-			// 	body: JSON.stringify(editedTour)
-			// };
-			// const response = await fetch('/tour', options);
-			// const json = await response.json();
-			// console.log(`Response from server: ${json}`);
-			// displayTour(); //now we've edited the tour, and posted it to the server, refresh it
+			console.log(`The edited tour is ${JSON.stringify(editedTour)}`);
+
+			const options = {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(editedTour)
+			};
+			const response = await fetch('/tour', options);
+			const jsonResponseFromServer = await response.json();
+			console.log(`Response from server, after editing tour: ${JSON.stringify(jsonResponseFromServer)}`);
+			displayTour(); //now we've edited the tour, and posted it to the server, refresh it
 		});
 
-		label.textContent = waypoint.label;
-		geo.textContent = `${waypoint.latitude}°, ${waypoint.longitude}°`;
-		const dateString = new Date(waypoint.timestamp).toLocaleString();
-		date.textContent = dateString;
-
-		root.append(handle, label, geo, date, rubbish);
+		root.append(handle, label, geo, date, rubbish, hiddenLatitude, hiddenLongitude, hiddenTimestamp);
 		divOfWaypoints.append(root);
 
-		const marker = L.marker([waypoint.latitude, waypoint.longitude]).addTo(theMap);
-		marker.bindPopup(`Waypoint ${i+1}:${waypoint.label}`);
-		i++;
+		currentWaypointIndex++; //
 	}
 
 	waypoints.append(divOfWaypoints);
