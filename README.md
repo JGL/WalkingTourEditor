@@ -1,2 +1,2 @@
 # WalkingTour
-A web based walking tour. Does this get detected?
+A web based walking tour.

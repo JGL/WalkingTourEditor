@@ -1,4 +1,4 @@
-let latitude, longitude, theMap, liveLocationRedCircle;
+let latitude, longitude, theMap, liveLocationRedCircle, markersLayer;
 
 latitude = 0; // latitude is north/south amount
 longitude = 0; // longitude is east/west amount - prime meridian (0) is London, Longitude rewards - https://en.wikipedia.org/wiki/Longitude_rewards
@@ -7,7 +7,7 @@ let firstTime = true; //boolean state for first time run, hacky
 
 let onMapClick = e => { // https://stackoverflow.com/questions/27977525/how-do-i-write-a-named-arrow-function-in-es2015
 	e.target.flyTo(e.latlng);
-}
+};
 
 function addMapWithTiles() {
 	theMap = L.map('theMap').setView([latitude, longitude], 0); //start at zoom zero, before we have a geolocation
@@ -20,6 +20,10 @@ function addMapWithTiles() {
 	tiles.addTo(theMap);
 
 	theMap.on('click', onMapClick);
+
+	markersLayer = new L.LayerGroup(); // NOTE: layer for all map markers created here, makes removal on refresh of the map much easier...see https://stackoverflow.com/questions/24318862/removing-all-data-markers-in-leaflet-map-before-calling-another-json
+	// NOTE: We add the markersLayer to the map here. This way, the layer is only added once.
+	markersLayer.addTo(theMap);
 }
 
 function checkForGeolocation() {
@@ -33,7 +37,7 @@ function checkForGeolocation() {
 			console.log('geolocation not available');
 		}
 		let informationTag = document.getElementById("geolocation");
-		informationTag.innerHTML = `Geolocation not available, do you have location services enabled? <a href='https://support.apple.com/en-gb/HT207092'>Help for Apple iOS devices</a> / <a href='https://support.google.com/accounts/answer/3467281?hl=en'>Help for Google Android devices</a>. Geolocation required for this tour to function.`
+		informationTag.innerHTML = `Geolocation not available, do you have location services enabled? <a href='https://support.apple.com/en-gb/HT207092'>Help for Apple iOS devices</a> / <a href='https://support.google.com/accounts/answer/3467281?hl=en'>Help for Google Android devices</a>. Geolocation required for this tour to function.`;
 		return false;
 	}
 }
@@ -62,7 +66,7 @@ async function geoLocate() {
 						radius: 21
 					}).addTo(theMap);
 					//theMap.setView([latitude, longitude], 17) //centre the view on the geolocation the first time we get a value
-					theMap.flyTo([latitude, longitude], 17) //fly to the geolocation the first time we get a value
+					theMap.flyTo([latitude, longitude], 17); //fly to the geolocation the first time we get a value
 					firstTime = false;
 				} else {
 					liveLocationRedCircle.setLatLng([latitude, longitude]); //if it's already been created, then just update position and don't recentre the view...
@@ -74,8 +78,8 @@ async function geoLocate() {
 	}
 }
 
-function addSaveButtonAndWaypointDescription() {
-	//adds a button to the DOM, IFF geolocation is available
+function addAddWaypointButton() {
+	//adds an add waypoint button to the DOM, IFF geolocation is available
 	if (checkForGeolocation()) {
 		const root = document.createElement("p");
 
@@ -86,7 +90,7 @@ function addSaveButtonAndWaypointDescription() {
 		let promptText = "type here first";
 		waypointLabel.value = promptText;
 		const waypointLabelHTMLLabel = document.createElement("label");
-		waypointLabelHTMLLabel.setAttribute("for", "waypointLabel");
+		waypointLabelHTMLLabel.setAttribute("for", "waypointLabel"); //https://developer.mozilla.org/en-US/docs/Web/HTML/Element/label
 		waypointLabelHTMLLabel.innerHTML = "Waypoint label: ";
 
 		root.appendChild(waypointLabelHTMLLabel); // put it into the DOM
@@ -95,7 +99,7 @@ function addSaveButtonAndWaypointDescription() {
 		//make the button to add the label and location to the database
 		const button = document.createElement("button");
 		button.innerHTML = "Add waypoint";
-		button.id = "addWaypointButton"
+		button.id = "addWaypointButton";
 		button.disabled = true;
 
 		root.appendChild(button);
@@ -147,8 +151,10 @@ async function displayTour() {
 	while (waypoints.firstChild) { // make sure none of the  old information is there.... https://stackoverflow.com/questions/3955229/remove-all-child-elements-of-a-dom-node-in-javascript
 		waypoints.removeChild(waypoints.firstChild);
 	}
+	//console.log(`Waypoints should be empty at this point.`);
 
-	console.log(`Waypoints should be empty at this point.`);
+	//remove all the previously added markers from the map, by clearing the layer we have previously created
+	markersLayer.clearLayers();
 
 	const descriptionElement = document.createElement('p');
 	descriptionElement.innerHTML = `Current waypoints: (drag <i class="
@@ -156,7 +162,7 @@ async function displayTour() {
 	fas fa-trash "></i> to delete)`;
 	waypoints.append(descriptionElement);
 
-	if (!(tour.waypoints.length > 0)) {
+	if (!tour.waypoints.length) {
 		descriptionElement.innerHTML = "No waypoints! Please add some above.";
 		return;
 	}
@@ -168,12 +174,12 @@ async function displayTour() {
 
 	let currentWaypointIndex = 0; //counter for waypoint order
 
-	for (waypoint of tour.waypoints) {
+	for (let waypoint of tour.waypoints) {
 		const root = document.createElement('div');
 		root.classList.add("list-group-item"); //bootstrap CSS via https://getbootstrap.com/
 
-		const handle = document.createElement('i');
-		handle.classList.add("fas", "fa-arrows-alt", "handle"); // adding Fontawesome icon: https://fontawesome.com/icons/arrows-alt?style=solid
+		const handleIcon = document.createElement('i');
+		handleIcon.classList.add("fas", "fa-arrows-alt", "handle"); // adding Fontawesome icon: https://fontawesome.com/icons/arrows-alt?style=solid
 
 		const label = document.createElement('div');
 		label.classList.add("waypoint-label");
@@ -181,7 +187,8 @@ async function displayTour() {
 		geo.classList.add("waypoint-geo");
 		const date = document.createElement('div');
 		date.classList.add("waypoint-date");
-		const rubbish = document.createElement('i');
+		const rubbishIcon = document.createElement('i'); //adding rubbish icon
+		rubbishIcon.classList.add("fas", "fa-trash");
 		const hiddenLatitude = document.createElement('div');
 		hiddenLatitude.classList.add("waypoint-latitude-hidden");
 		const hiddenLongitude = document.createElement('div');
@@ -194,8 +201,10 @@ async function displayTour() {
 		geo.textContent = `${waypoint.latitude}°, ${waypoint.longitude}°`;
 		const dateString = new Date(waypoint.timestamp).toLocaleString();
 		date.textContent = dateString;
-		const marker = L.marker([waypoint.latitude, waypoint.longitude]).addTo(theMap);
+		//const marker = L.marker([waypoint.latitude, waypoint.longitude]).addTo(theMap);
+		const marker = L.marker([waypoint.latitude, waypoint.longitude]);
 		marker.bindPopup(`Waypoint ${currentWaypointIndex + 1}:${waypoint.label}`);
+		markersLayer.addLayer(marker);
 
 		//set the content of hidden UI elements, avoids horrible and insecure de-formating of strings from html
 		hiddenLatitude.textContent = waypoint.latitude;
@@ -206,10 +215,8 @@ async function displayTour() {
 		hiddenLongitude.hidden = true;
 		hiddenTimestamp.hidden = true;
 
-		//adding rubbish icon
-		rubbish.classList.add("fas", "fa-trash");
 		//set up the click event interaction for the rubbish icon
-		rubbish.addEventListener('click', async event => {
+		rubbishIcon.addEventListener('click', async event => {
 			console.log(`Rubbish bin pressed!`);
 			root.remove(); //removing the clicked waypoint, by deleting it from the DOM
 
@@ -220,7 +227,7 @@ async function displayTour() {
 				"waypoints": [] //no waypoints as yet....
 			};
 
-			for (waypointDivision of divOfWaypoints.children) {
+			for (let waypointDivision of divOfWaypoints.children) {
 				let currentWaypoint = {
 					"label": "",
 					"latitude": 0,
@@ -241,7 +248,7 @@ async function displayTour() {
 				// < /div>
 
 				//but lets at least try to select the relevant element, rather than doing direct array access a la:
-				//currentWaypoint.label = waypointDivision.children[1].innerHTML; // horrible and fragile! TODO: make this sensible
+				//currentWaypoint.label = waypointDivision.children[1].innerHTML; // horrible and fragile, below method is better
 
 				currentWaypoint.label = waypointDivision.querySelector('div.waypoint-label').innerHTML; //https://developer.mozilla.org/en-US/docs/Web/API/Element/querySelector / https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector
 				//important that these are numbers, not text
@@ -267,7 +274,7 @@ async function displayTour() {
 			displayTour(); //now we've edited the tour, and posted it to the server, refresh it
 		});
 
-		root.append(handle, label, geo, date, rubbish, hiddenLatitude, hiddenLongitude, hiddenTimestamp);
+		root.append(handleIcon, label, geo, date, rubbishIcon, hiddenLatitude, hiddenLongitude, hiddenTimestamp);
 		divOfWaypoints.append(root);
 
 		currentWaypointIndex++; //
@@ -285,8 +292,32 @@ async function displayTour() {
 	});
 }
 
+function addSaveTourButton() {
+	//adds a save tour button to the DOM, IFF geolocation is available
+	if (checkForGeolocation()) {
+		const divForSave = document.createElement("div");
+		divForSave.id = "saveTour";
+		divForSave.textContent = "Click save icon to save tour.";
+		const saveIcon = document.createElement('i'); //adding rubbish icon
+		saveIcon.classList.add("fas", "fa-save");
+		saveIcon.id = "saveTourButton";
+		divForSave.appendChild(saveIcon);
+
+		//add the newly created divForSave node to the document
+		let save = document.getElementById("saveTour");
+		save.appendChild(divForSave); //adding all the new DOM above to the html page at the correct place
+
+		saveIcon.addEventListener('click', async event => {
+			console.log("Should save now!");
+			//TODO - save it properly? should refresh too for safety?
+		});
+
+	}
+}
+
 addMapWithTiles();
 geoLocate();
 displayTour();
-addSaveButtonAndWaypointDescription();
+addAddWaypointButton();
+addSaveTourButton();
 setInterval(geoLocate, 1000); //geolocate every 1000 milliseconds / second, an async function, so other things can happen too...

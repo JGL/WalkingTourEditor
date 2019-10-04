@@ -2,22 +2,28 @@
   "title": "Highams Park",
   "waypoints": [
     {
-      "label": "potato5",
-      "latitude": 51.606180200000004,
-      "longitude": 0.0016227,
-      "timestamp": 1565709000199
+      "label": "cx",
+      "latitude": 51.6061605,
+      "longitude": 0.0016372,
+      "timestamp": 1565882228965
     },
     {
-      "label": "potato 6",
-      "latitude": 51.6062126,
-      "longitude": 0.0016037999999999998,
-      "timestamp": 1565709792688
+      "label": "cx",
+      "latitude": 51.6061605,
+      "longitude": 0.0016372,
+      "timestamp": 1565882234409
     },
     {
-      "label": "potato 7",
-      "latitude": 51.6062126,
-      "longitude": 0.0016037999999999998,
-      "timestamp": 1565709859091
+      "label": "cx",
+      "latitude": 51.6061605,
+      "longitude": 0.0016372,
+      "timestamp": 1565882234591
+    },
+    {
+      "label": "cx",
+      "latitude": 51.6061605,
+      "longitude": 0.0016372,
+      "timestamp": 1565882234792
     }
   ]
 }
