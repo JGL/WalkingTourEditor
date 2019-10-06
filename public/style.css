@@ -1,8 +1,23 @@
 #theMap {
-	width: 320px;
-	height: 240px;
+	width: 640px;
+	height: 480px;
 }
 
-.handle {
+.fa-arrows-alt {
 	cursor: grab;
+	/* https://developer.mozilla.org/en-US/docs/Web/CSS/cursor */
+}
+
+.fa-trash {
+	cursor: not-allowed;
+	/* https://developer.mozilla.org/en-US/docs/Web/CSS/cursor */
+}
+
+.fa-save {
+	cursor: cell;
+	/* https://developer.mozilla.org/en-US/docs/Web/CSS/cursor */
+}
+
+.fas {
+	font-size: 32px;
 }

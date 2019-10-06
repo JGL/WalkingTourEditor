@@ -21,30 +21,27 @@ let exists = fs.existsSync(filename);
 if (exists) {
 	// read the file
 	console.log('Loading walking tour on server startup');
-	var txt = fs.readFileSync(filename, 'utf8');
+	let rawJSONTextFile = fs.readFileSync(filename, 'utf8');
 	// Parse it  back to object
-	tour = JSON.parse(txt);
+	tour = JSON.parse(rawJSONTextFile);
 } else {
 	// otherwise start with example tour
 	console.log('No walking tour found, populating example tour, with title "Highams Park"');
 	tour = {
 		"title": "Highams Park",
 		"waypoints": [{
-			"label": "First",
-			"latitude": 51.6061853,
-			"longitude": 0.0016033,
-			"timestamp": 1565106843993
-		}, {
-			"label": "Second",
-			"latitude": 51.6061598,
-			"longitude": 0.0016259,
-			"timestamp": 1565116464662
+			"label": "Joel",
+			"latitude": 51.6062364,
+			"longitude": 0.0015591000000000001,
+			"timestamp": 1570277277218,
+			"multimedia": "https://reasons.to/content/0-2009/1-brighton/1-speakers/0-joel-gethin-lewis/joel-gethin-lewis.jpg",
+			"range": 4
 		}]
 	};
 }
 
 app.post('/waypoint', (request, response) => {
-	console.log(`Trying to post additional waypoint to tour...`);
+	// console.log(`Trying to post additional waypoint to tour...`);
 	let newWaypoint = request.body;
 	// console.log(`The new waypoint is ${JSON.stringify(newWaypoint)}`);
 	// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify
@@ -70,19 +67,18 @@ app.post('/waypoint', (request, response) => {
 });
 
 app.post('/tour', (request, response) => {
-	console.log(`Trying to post edit tour...`);
+	// console.log(`Trying to post or save edited tour from client.`);
 	let newTour = request.body;
-	// console.log(`The new tour is ${JSON.stringify(newTour)}`);
+	console.log(`The new tour is ${JSON.stringify(newTour)}`);
 	tour = newTour; //MUST overwrite old tour, or it will live in memory forever, like the undead
 
-	const json = JSON.stringify(newTour, null, 2);
+	const json = JSON.stringify(tour, null, 2);
 	fs.writeFileSync(filename, json, 'utf8');
-	response.json(newTour);
+	response.json(tour);
 });
 
 app.get('/tour', (request, response) => {
-	console.log(`Trying to get tour...`);
-	// console.log(`The tour is ${JSON.stringify(tour)}`);
+	// console.log(`Trying to get tour for the client. The server side tour is ${JSON.stringify(tour)}`);
 	response.json(tour);
 });
 

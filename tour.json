@@ -2,28 +2,28 @@
   "title": "Highams Park",
   "waypoints": [
     {
-      "label": "cx",
-      "latitude": 51.6061605,
-      "longitude": 0.0016372,
-      "timestamp": 1565882228965
+      "label": "Home",
+      "latitude": 51.606227,
+      "longitude": 0.0015616999999999999,
+      "timestamp": 1570382417709,
+      "multimedia": "https://reasons.to/content/0-2009/1-brighton/1-speakers/0-joel-gethin-lewis/joel-gethin-lewis.jpg",
+      "range": 42
     },
     {
-      "label": "cx",
-      "latitude": 51.6061605,
-      "longitude": 0.0016372,
-      "timestamp": 1565882234409
+      "label": "Chip shop",
+      "latitude": 51.607091296366065,
+      "longitude": 0.0007324106991291047,
+      "timestamp": 1570382395277,
+      "multimedia": "https://reasons.to/content/0-2009/1-brighton/1-speakers/0-joel-gethin-lewis/joel-gethin-lewis.jpg",
+      "range": 42
     },
     {
-      "label": "cx",
-      "latitude": 51.6061605,
-      "longitude": 0.0016372,
-      "timestamp": 1565882234591
-    },
-    {
-      "label": "cx",
-      "latitude": 51.6061605,
-      "longitude": 0.0016372,
-      "timestamp": 1565882234792
+      "label": "Train",
+      "latitude": 51.60768065614427,
+      "longitude": -0.00046066939830780035,
+      "timestamp": 1570382374962,
+      "multimedia": "https://reasons.to/content/0-2009/1-brighton/1-speakers/0-joel-gethin-lewis/joel-gethin-lewis.jpg",
+      "range": 42
     }
   ]
 }
