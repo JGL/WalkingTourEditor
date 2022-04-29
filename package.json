@@ -1,5 +1,5 @@
 {
-  "name": "walkingtour",
+  "name": "walkingtoureditor",
   "version": "1.0.0",
   "description": "A web application written in Express and node that uses nedb to store information about walking tours and run them in the browser",
   "main": "server.js",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/JGL/WalkingTour.git"
+    "url": "git+https://github.com/JGL/WalkingTourEditor.git"
   },
   "keywords": [
     "geolocation",
@@ -20,13 +20,13 @@
   "author": "Joel Gethin Lewis",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/JGL/WalkingTour/issues"
+    "url": "https://github.com/JGL/WalkingTourEditor/issues"
   },
-  "homepage": "https://github.com/JGL/WalkingTour#readme",
+  "homepage": "https://github.com/JGL/WalkingTourEditor#readme",
   "dependencies": {
     "express": "^4.17.1",
     "nedb": "^1.8.0",
     "node-fetch": "^2.6.0",
-    "nodemon": "^1.19.1"
+    "nodemon": "^2.0.16"
   }
 }
