@@ -1,7 +1,7 @@
 {
   "name": "walkingtoureditor",
   "version": "1.0.0",
-  "description": "A web application written in Express and node that uses nedb to store information about walking tours and run them in the browser",
+  "description": "A web application written in Express and node that uses geoJSON to store information about walking tours and run them in the browser",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -25,7 +25,6 @@
   "homepage": "https://github.com/JGL/WalkingTourEditor#readme",
   "dependencies": {
     "express": "^4.17.1",
-    "nedb": "^1.8.0",
     "node-fetch": "^2.6.0",
     "nodemon": "^2.0.16"
   }
