@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/JGL/WalkingTourEditor#readme",
   "dependencies": {
-    "express": "^4.17.1",
+    "express": "^4.19.2",
     "node-fetch": "^2.6.0",
     "nodemon": "^2.0.20"
   }
